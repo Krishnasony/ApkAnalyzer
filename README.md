@@ -4,7 +4,7 @@ A Chrome extension that compares two APK files and reports size changes by folde
 
 ## 🔗 Quick Links
 
-- **🔒 Privacy Policy**: [https://yourusername.github.io/ApkAnalyzer/](https://yourusername.github.io/ApkAnalyzer/)
+- **🔒 Privacy Policy**: [https://krishnasony.github.io/ApkAnalyzer/](https://krishnasony.github.io/ApkAnalyzer/)
 - **🌐 Chrome Web Store**: Coming soon after approval!
 
 ## ✨ Features
