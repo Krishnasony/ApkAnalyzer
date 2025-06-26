@@ -1,0 +1,21 @@
+{
+  "name": "apk-size-analyzer",
+  "version": "1.0.0",
+  "description": "Chrome extension for analyzing and comparing APK file sizes",
+  "main": "popup.js",
+  "scripts": {
+    "dev": "echo 'Load the extension in Chrome at chrome://extensions/ with Developer mode enabled'",
+    "build": "echo 'No build step required for this Chrome extension'",
+    "lint": "echo 'Consider adding ESLint for code quality checks'"
+  },
+  "keywords": [
+    "chrome-extension",
+    "apk-analyzer",
+    "android",
+    "file-comparison"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}

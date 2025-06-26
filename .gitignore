@@ -1,0 +1,20 @@
+# Extension package files
+*.zip
+*.crx
+
+# Development files
+debug.html
+test-*.apk
+minimal-test.html
+file-input-test.html
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+temp/
+tmp/

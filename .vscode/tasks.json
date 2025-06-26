@@ -1,0 +1,16 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Open Chrome Extensions Page",
+			"type": "shell",
+			"command": "open",
+			"args": [
+				"chrome://extensions/"
+			],
+			"group": "build",
+			"isBackground": false,
+			"problemMatcher": []
+		}
+	]
+}

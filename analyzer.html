@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APK Size Analyzer - Full Screen</title>
+  <link rel="stylesheet" href="analyzer.css">
+  <script src="chart.umd.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    <header class="app-header">
+      <h1>🔍 APK Size Analyzer</h1>
+      <p class="subtitle">Compare two APK files and analyze size differences</p>
+    </header>
+    
+    <main class="main-content">
+      <div class="upload-section">
+        <div class="file-upload-container">
+          <div class="file-input-group">
+            <div class="file-drop-zone" id="dropZoneOld">
+              <div class="file-icon">📁</div>
+              <h3>Old APK File</h3>
+              <p>Click to select or drag & drop your old APK file here</p>
+              <input type="file" id="fileOld" accept=".apk, .zip" class="file-input-styled">
+              <div class="file-info" id="fileInfoOld"></div>
+            </div>
+          </div>
+          
+          <div class="vs-separator">
+            <span>VS</span>
+          </div>
+          
+          <div class="file-input-group">
+            <div class="file-drop-zone" id="dropZoneNew">
+              <div class="file-icon">📁</div>
+              <h3>New APK File</h3>
+              <p>Click to select or drag & drop your new APK file here</p>
+              <input type="file" id="fileNew" accept=".apk, .zip" class="file-input-styled">
+              <div class="file-info" id="fileInfoNew"></div>
+            </div>
+          </div>
+        </div>
+        
+        <button id="analyzeBtn" class="analyze-button" disabled>
+          <span class="button-icon">🔍</span>
+          Analyze APK Files
+        </button>
+      </div>
+      
+      <div id="loading" class="loading-section hidden">
+        <div class="loading-content">
+          <div class="spinner"></div>
+          <h2 id="loadingText">Analyzing APK files...</h2>
+          <div class="progress-container">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <span class="progress-text" id="progressText">0%</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="results" class="results-section hidden">
+        <div class="results-header">
+          <h2>📊 Analysis Results</h2>
+          <button id="exportBtn" class="export-button">📥 Export Results</button>
+        </div>
+        
+        <div class="summary-cards">
+          <div class="summary-card">
+            <h3>📱 Old APK</h3>
+            <div class="summary-value" id="oldApkSize">-</div>
+          </div>
+          <div class="summary-card">
+            <h3>📱 New APK</h3>
+            <div class="summary-value" id="newApkSize">-</div>
+          </div>
+          <div class="summary-card total-change-card">
+            <h3>📈 Size Change</h3>
+            <div class="summary-value" id="totalChange">-</div>
+          </div>
+        </div>
+        
+        <div class="results-tabs">
+          <button class="tab-button active" data-tab="overview">📊 Overview</button>
+          <button class="tab-button" data-tab="folders">📂 Folders</button>
+          <button class="tab-button" data-tab="extensions">🔧 Extensions</button>
+          <button class="tab-button" data-tab="details">🔍 Detailed Analysis</button>
+        </div>
+        
+        <div class="tab-content">
+          <div id="overviewTab" class="tab-panel active">
+            <div class="charts-container">
+              <div class="chart-section">
+                <h3>📈 Size Comparison Overview</h3>
+                <div class="chart-wrapper">
+                  <canvas id="overviewChart"></canvas>
+                </div>
+              </div>
+              
+              <div class="chart-section">
+                <h3>📊 Top 10 Size Changes</h3>
+                <div class="chart-wrapper">
+                  <canvas id="changesChart"></canvas>
+                </div>
+              </div>
+            </div>
+            
+            <div class="insights-section">
+              <h3>🔍 Key Insights</h3>
+              <div id="insightsContainer" class="insights-grid">
+                <!-- Insights will be populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+          
+          <div id="foldersTab" class="tab-panel">
+            <div class="analysis-header">
+              <h3>📂 Folder Analysis</h3>
+              <div class="chart-wrapper">
+                <canvas id="foldersChart"></canvas>
+              </div>
+            </div>
+            <div class="table-container">
+              <table id="folderTable" class="results-table">
+                <thead>
+                  <tr>
+                    <th>Folder</th>
+                    <th>Old Size</th>
+                    <th>New Size</th>
+                    <th>Change</th>
+                    <th>% Change</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div id="extensionsTab" class="tab-panel">
+            <div class="analysis-header">
+              <h3>🔧 Extension Analysis</h3>
+              <div class="chart-wrapper">
+                <canvas id="extensionsChart"></canvas>
+              </div>
+            </div>
+            <div class="table-container">
+              <table id="extTable" class="results-table">
+                <thead>
+                  <tr>
+                    <th>Extension</th>
+                    <th>Old Size</th>
+                    <th>New Size</th>
+                    <th>Change</th>
+                    <th>% Change</th>
+                    <th>File Count</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div id="detailsTab" class="tab-panel">
+            <div class="detailed-analysis">
+              <div class="analysis-controls">
+                <div class="search-container">
+                  <input type="text" id="fileSearch" placeholder="🔍 Search files..." />
+                  <select id="sortBy">
+                    <option value="change">Sort by Change</option>
+                    <option value="name">Sort by Name</option>
+                    <option value="size">Sort by Size</option>
+                  </select>
+                  <select id="filterBy">
+                    <option value="all">All Files</option>
+                    <option value="increased">Size Increased</option>
+                    <option value="decreased">Size Decreased</option>
+                    <option value="new">New Files</option>
+                    <option value="removed">Removed Files</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="breadcrumb">
+                <span id="currentPath">📁 Root</span>
+              </div>
+              
+              <div id="fileExplorer" class="file-explorer">
+                <!-- File explorer will be populated by JavaScript -->
+              </div>
+              
+              <div class="pagination">
+                <button id="prevPage" disabled>← Previous</button>
+                <span id="pageInfo">Page 1 of 1</span>
+                <button id="nextPage" disabled>Next →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="jszip.min.js"></script>
+  <script src="chart.umd.js"></script>
+  <script src="analyzer.js"></script>
+</body>
+</html>
