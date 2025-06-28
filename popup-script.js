@@ -6,7 +6,6 @@ console.log('Popup script loaded');
 document.addEventListener('DOMContentLoaded', () => {
   // Debug: Check if chrome APIs are available
   console.log('Chrome runtime available:', !!chrome.runtime);
-  console.log('Chrome tabs available:', !!chrome.tabs);
   if (chrome.runtime) {
     console.log('Extension URL:', chrome.runtime.getURL('analyzer.html'));
   }

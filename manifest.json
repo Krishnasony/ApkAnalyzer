@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "APK Size Analyzer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Compare two APK files and analyze size differences with detailed breakdowns by folder and file extension.",
-  "permissions": ["storage", "tabs"],
+  "permissions": [],
   "action": {
     "default_popup": "popup.html",
     "default_title": "APK Size Analyzer",
@@ -16,6 +16,6 @@
   "background": {
     "service_worker": "background.js"
   },
-  "homepage_url": "https://github.com/yourusername/apk-analyzer",
-  "author": "Your Name"
+  "homepage_url": "https://github.com/Krishnasony/ApkAnalyzer",
+  "author": "Krishna Sony"
 }
