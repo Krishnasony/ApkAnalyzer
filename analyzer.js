@@ -11,6 +11,493 @@ if (typeof Chart !== 'undefined') {
 }
 
 class APKAnalyzer {
+  // SDK Detection patterns - comprehensive list of Android libraries and SDKs
+  static SDK_PATTERNS = {
+    // Google/Firebase SDKs
+    'Firebase': [
+      'com/google/firebase/',
+      'com/google/android/gms/',
+      'firebase-',
+      'com/google/firebase'
+    ],
+    'Google Play Services': [
+      'com/google/android/gms/',
+      'play-services-'
+    ],
+    'Google AdMob': [
+      'com/google/android/gms/ads/',
+      'com/google/ads/',
+      'admob-'
+    ],
+    'Google Analytics': [
+      'com/google/analytics/',
+      'com/google/android/gms/analytics/',
+      'analytics-'
+    ],
+    'Google Maps': [
+      'com/google/android/gms/maps/',
+      'play-services-maps'
+    ],
+    
+    // Meta/Facebook SDKs
+    'Facebook SDK': [
+      'com/facebook/',
+      'facebook-android-sdk',
+      'facebook-core',
+      'facebook-login'
+    ],
+    'Facebook Audience Network': [
+      'com/facebook/ads/',
+      'audience-network-sdk'
+    ],
+    
+    // UI Libraries
+    'Android Support/AndroidX': [
+      'android/support/',
+      'androidx/',
+      'support-v4',
+      'appcompat-v7',
+      'appcompat'
+    ],
+    'Material Design': [
+      'com/google/android/material/',
+      'design-',
+      'material-'
+    ],
+    'Constraint Layout': [
+      'androidx/constraintlayout/',
+      'constraintlayout-'
+    ],
+    'RecyclerView': [
+      'androidx/recyclerview/',
+      'recyclerview-'
+    ],
+    'ViewPager2': [
+      'androidx/viewpager2/',
+      'viewpager2-'
+    ],
+    'Fragment': [
+      'androidx/fragment/',
+      'fragment-'
+    ],
+    'CardView': [
+      'androidx/cardview/',
+      'cardview-'
+    ],
+    
+    // Networking Libraries
+    'OkHttp': [
+      'okhttp3/',
+      'com/squareup/okhttp/',
+      'okhttp-'
+    ],
+    'Retrofit': [
+      'retrofit2/',
+      'com/squareup/retrofit/',
+      'retrofit-'
+    ],
+    'Volley': [
+      'com/android/volley/',
+      'volley-'
+    ],
+    'Apache HTTP': [
+      'org/apache/http/',
+      'httpclient-'
+    ],
+    
+    // Image Loading Libraries
+    'Glide': [
+      'com/bumptech/glide/',
+      'glide-'
+    ],
+    'Picasso': [
+      'com/squareup/picasso/',
+      'picasso-'
+    ],
+    'Fresco': [
+      'com/facebook/fresco/',
+      'fresco-'
+    ],
+    'Coil': [
+      'coil-kt/',
+      'io/coil-kt/',
+      'coil-'
+    ],
+    'Universal Image Loader': [
+      'com/nostra13/universalimageloader/',
+      'universal-image-loader'
+    ],
+    
+    // JSON Processing
+    'Gson': [
+      'com/google/gson/',
+      'gson-'
+    ],
+    'Jackson': [
+      'com/fasterxml/jackson/',
+      'jackson-'
+    ],
+    'Moshi': [
+      'com/squareup/moshi/',
+      'moshi-'
+    ],
+    
+    // Database Libraries
+    'Room': [
+      'androidx/room/',
+      'room-'
+    ],
+    'Realm': [
+      'io/realm/',
+      'realm-android'
+    ],
+    'SQLite': [
+      'android/database/sqlite/'
+    ],
+    'ObjectBox': [
+      'io/objectbox/',
+      'objectbox-'
+    ],
+    'GreenDAO': [
+      'org/greenrobot/greendao/',
+      'greendao-'
+    ],
+    
+    // Dependency Injection
+    'Dagger': [
+      'dagger/',
+      'com/google/dagger/'
+    ],
+    'Hilt': [
+      'dagger/hilt/',
+      'hilt-android'
+    ],
+    'Koin': [
+      'org/koin/',
+      'koin-'
+    ],
+    
+    // Reactive Programming
+    'RxJava': [
+      'io/reactivex/',
+      'rxjava'
+    ],
+    'RxAndroid': [
+      'rxandroid'
+    ],
+    'RxBinding': [
+      'com/jakewharton/rxbinding',
+      'rxbinding'
+    ],
+    
+    // Event Bus
+    'EventBus': [
+      'org/greenrobot/eventbus/',
+      'eventbus-'
+    ],
+    'Otto': [
+      'com/squareup/otto/',
+      'otto-'
+    ],
+    
+    // Testing Libraries
+    'JUnit': [
+      'junit/',
+      'org/junit/'
+    ],
+    'Mockito': [
+      'org/mockito/',
+      'mockito-'
+    ],
+    'Espresso': [
+      'androidx/test/espresso/',
+      'espresso-'
+    ],
+    'Robolectric': [
+      'org/robolectric/',
+      'robolectric-'
+    ],
+    
+    // Logging
+    'Timber': [
+      'timber/',
+      'com/jakewharton/timber/'
+    ],
+    'SLF4J': [
+      'org/slf4j/',
+      'slf4j-'
+    ],
+    
+    // Crash Reporting & Analytics
+    'Crashlytics': [
+      'com/crashlytics/',
+      'firebase-crashlytics'
+    ],
+    'Bugsnag': [
+      'com/bugsnag/',
+      'bugsnag-'
+    ],
+    'Flurry': [
+      'com/flurry/',
+      'flurry-'
+    ],
+    'Mixpanel': [
+      'com/mixpanel/',
+      'mixpanel-'
+    ],
+    'Amplitude': [
+      'com/amplitude/',
+      'amplitude-'
+    ],
+    
+    // Push Notifications
+    'Firebase Messaging': [
+      'com/google/firebase/messaging/',
+      'firebase-messaging'
+    ],
+    'OneSignal': [
+      'com/onesignal/',
+      'onesignal-'
+    ],
+    'Pusher': [
+      'com/pusher/',
+      'pusher-'
+    ],
+    
+    // Payment SDKs
+    'Stripe': [
+      'com/stripe/',
+      'stripe-'
+    ],
+    'PayPal': [
+      'com/paypal/',
+      'paypal-'
+    ],
+    'Square': [
+      'com/squareup/sdk/',
+      'square-'
+    ],
+    'Braintree': [
+      'com/braintreepayments/',
+      'braintree-'
+    ],
+    
+    // Social Media SDKs
+    'Twitter SDK': [
+      'com/twitter/',
+      'twitter-'
+    ],
+    'LinkedIn SDK': [
+      'com/linkedin/',
+      'linkedin-'
+    ],
+    'Instagram': [
+      'com/instagram/',
+      'instagram-'
+    ],
+    
+    // Video & Media
+    'ExoPlayer': [
+      'com/google/android/exoplayer/',
+      'exoplayer-'
+    ],
+    'YouTube Player': [
+      'com/google/android/youtube/',
+      'youtube-player'
+    ],
+    'Lottie': [
+      'com/airbnb/lottie/',
+      'lottie-'
+    ],
+    'Wistia': [
+      'com/wistia/',
+      'wistia-'
+    ],
+    
+    // Camera & Image Processing
+    'CameraX': [
+      'androidx/camera/',
+      'camera-'
+    ],
+    'ZXing': [
+      'com/google/zxing/',
+      'zxing-'
+    ],
+    'ML Kit': [
+      'com/google/mlkit/',
+      'play-services-mlkit'
+    ],
+    
+    // Location & Maps
+    'Mapbox': [
+      'com/mapbox/',
+      'mapbox-'
+    ],
+    'HERE Maps': [
+      'com/here/',
+      'here-'
+    ],
+    
+    // Animation Libraries
+    'ViewPropertyAnimator': [
+      'com/nineoldandroids/',
+      'nineoldandroids-'
+    ],
+    'Spring Animation': [
+      'androidx/dynamicanimation/',
+      'dynamicanimation-'
+    ],
+    
+    // Barcode & QR Code
+    'ZBar': [
+      'net/sourceforge/zbar/',
+      'zbar-'
+    ],
+    'QR Code Reader': [
+      'com/dlazaro66/qrcodereaderview/',
+      'qrcodereaderview-'
+    ],
+    
+    // Cloud Storage
+    'AWS SDK': [
+      'com/amazonaws/',
+      'aws-android-sdk'
+    ],
+    'Dropbox SDK': [
+      'com/dropbox/',
+      'dropbox-'
+    ],
+    'Google Drive': [
+      'com/google/api/services/drive/',
+      'play-services-drive'
+    ],
+    
+    // Native Libraries & NDK
+    'Native Code (.so)': [
+      'lib/',
+      '.so'
+    ],
+    'OpenCV': [
+      'org/opencv/',
+      'opencv-'
+    ],
+    'FFmpeg': [
+      'ffmpeg',
+      'libavcodec',
+      'libavformat'
+    ],
+    
+    // Kotlin & Coroutines
+    'Kotlin Runtime': [
+      'kotlin/',
+      'kotlinx/',
+      'kotlin-stdlib'
+    ],
+    'Kotlin Coroutines': [
+      'kotlinx/coroutines/',
+      'kotlinx-coroutines'
+    ],
+    
+    // Architecture Components
+    'Navigation': [
+      'androidx/navigation/',
+      'navigation-'
+    ],
+    'Lifecycle': [
+      'androidx/lifecycle/',
+      'lifecycle-'
+    ],
+    'ViewModel': [
+      'androidx/lifecycle/viewmodel/',
+      'viewmodel-'
+    ],
+    'LiveData': [
+      'androidx/lifecycle/livedata/',
+      'livedata-'
+    ],
+    'WorkManager': [
+      'androidx/work/',
+      'work-'
+    ],
+    'Paging': [
+      'androidx/paging/',
+      'paging-'
+    ],
+    'DataBinding': [
+      'androidx/databinding/',
+      'databinding-'
+    ],
+    
+    // Security
+    'Biometric': [
+      'androidx/biometric/',
+      'biometric-'
+    ],
+    'Security Crypto': [
+      'androidx/security/',
+      'security-'
+    ],
+    
+    // Communication
+    'WebRTC': [
+      'org/webrtc/',
+      'webrtc-'
+    ],
+    'Socket.IO': [
+      'io/socket/',
+      'socket.io-'
+    ],
+    'MQTT': [
+      'org/eclipse/paho/',
+      'paho-'
+    ],
+    
+    // Utility Libraries
+    'Apache Commons': [
+      'org/apache/commons/',
+      'commons-'
+    ],
+    'Guava': [
+      'com/google/common/',
+      'guava-'
+    ],
+    'Joda Time': [
+      'org/joda/time/',
+      'joda-time'
+    ],
+    'ThreeTen': [
+      'org/threeten/',
+      'threetenbp'
+    ],
+    
+    // Additional specific patterns for better categorization
+    'App Main Code': [
+      'classes.dex',
+      'classes2.dex', 
+      'classes3.dex'
+    ],
+    'Manifest & Signatures': [
+      'AndroidManifest.xml',
+      'META-INF/MANIFEST.MF',
+      'META-INF/CERT.',
+      'META-INF/*.RSA',
+      'META-INF/*.SF'
+    ],
+    'ProGuard/R8': [
+      'proguard',
+      'r8-'
+    ],
+    'Build Tools': [
+      'com/android/build/',
+      'build-tools'
+    ],
+    'Annotation Processing': [
+      'javax/annotation/',
+      'org/jetbrains/annotations/',
+      'androidx/annotation/'
+    ]
+  };
+
   constructor() {
     this.oldFileData = null;
     this.newFileData = null;
@@ -296,6 +783,9 @@ class APKAnalyzer {
           case 'extensions':
             this.renderExtensionsChart();
             break;
+          case 'sdks':
+            this.renderSDKsChart();
+            break;
           case 'details':
             this.renderFileExplorer();
             break;
@@ -450,7 +940,7 @@ class APKAnalyzer {
 
     try {
       const zip = await JSZip.loadAsync(file);
-      const sizes = { folder: {}, ext: {} };
+      const sizes = { folder: {}, ext: {}, sdk: {} };
       const detailedData = { files: [], folders: new Set() };
       const fileEntries = Object.entries(zip.files);
       
@@ -486,6 +976,12 @@ class APKAnalyzer {
           const ext = extMatch ? '.' + extMatch[1] : 'no_ext';
           sizes.ext[ext] = (sizes.ext[ext] || 0) + bytes;
 
+          // SDK Detection
+          const detectedSDKs = this.detectSDKs(fileName);
+          for (const sdk of detectedSDKs) {
+            sizes.sdk[sdk] = (sizes.sdk[sdk] || 0) + bytes;
+          }
+
           // Detailed file data
           detailedData.files.push({
             path: fileName,
@@ -493,7 +989,8 @@ class APKAnalyzer {
             folder: folder,
             extension: ext,
             size: bytes,
-            directory: pathParts.slice(0, -1).join('/') || 'root'
+            directory: pathParts.slice(0, -1).join('/') || 'root',
+            sdks: detectedSDKs
           });
 
           // Track folders
@@ -511,12 +1008,114 @@ class APKAnalyzer {
       }
 
       detailedData.folders = Array.from(detailedData.folders);
-      console.log('APK analysis complete. Folders:', Object.keys(sizes.folder).length, 'Extensions:', Object.keys(sizes.ext).length, 'Files:', detailedData.files.length);
+      console.log('APK analysis complete. Folders:', Object.keys(sizes.folder).length, 'Extensions:', Object.keys(sizes.ext).length, 'SDKs:', Object.keys(sizes.sdk).length, 'Files:', detailedData.files.length);
       return { sizes, detailedData };
     } catch (error) {
       console.error('Error reading APK:', error);
       throw new Error(`Failed to read APK file "${file.name}". Please ensure it's a valid APK or ZIP file. Error: ${error.message}`);
     }
+  }
+
+  // Detect SDKs based on file path
+  detectSDKs(filePath) {
+    const detectedSDKs = [];
+    
+    // Check against all SDK patterns
+    for (const [sdkName, patterns] of Object.entries(APKAnalyzer.SDK_PATTERNS)) {
+      for (const pattern of patterns) {
+        if (filePath.includes(pattern)) {
+          detectedSDKs.push(sdkName);
+          break; // Only add each SDK once per file
+        }
+      }
+    }
+    
+    // If no specific SDK detected, categorize by folder structure and file type
+    if (detectedSDKs.length === 0) {
+      // Categorize by main APK folders
+      if (filePath.startsWith('META-INF/')) {
+        detectedSDKs.push('APK Metadata');
+      } else if (filePath.startsWith('res/')) {
+        detectedSDKs.push('App Resources');
+      } else if (filePath.startsWith('assets/')) {
+        detectedSDKs.push('App Assets');
+      } else if (filePath.startsWith('classes') && filePath.endsWith('.dex')) {
+        detectedSDKs.push('App Code (DEX)');
+      } else if (filePath.includes('android/') && !filePath.includes('androidx/')) {
+        detectedSDKs.push('Android Framework');
+      } else if (filePath.includes('java/') || filePath.includes('javax/')) {
+        detectedSDKs.push('Java Libraries');
+      } else if (filePath.includes('org/apache/')) {
+        detectedSDKs.push('Apache Libraries');
+      } else if (filePath.includes('org/')) {
+        detectedSDKs.push('Open Source Libraries');
+      } else if (filePath.includes('com/') && !this.isKnownCompany(filePath)) {
+        // Try to extract company/package name from com/ packages
+        const packageMatch = filePath.match(/com\/([^\/]+)/);
+        if (packageMatch) {
+          const company = this.formatCompanyName(packageMatch[1]);
+          detectedSDKs.push(`${company} Libraries`);
+        } else {
+          detectedSDKs.push('Third-party Libraries');
+        }
+      } else if (filePath.includes('io/') || filePath.includes('net/')) {
+        detectedSDKs.push('Network Libraries');
+      } else if (filePath.endsWith('.so')) {
+        detectedSDKs.push('Native Libraries (.so)');
+      } else if (filePath.endsWith('.png') || filePath.endsWith('.jpg') || filePath.endsWith('.webp')) {
+        detectedSDKs.push('Image Assets');
+      } else if (filePath.endsWith('.xml')) {
+        detectedSDKs.push('XML Resources');
+      } else if (filePath.endsWith('.json')) {
+        detectedSDKs.push('JSON Data');
+      } else if (filePath.endsWith('.ttf') || filePath.endsWith('.otf')) {
+        detectedSDKs.push('Fonts');
+      } else if (filePath.endsWith('.mp4') || filePath.endsWith('.mp3') || filePath.endsWith('.wav')) {
+        detectedSDKs.push('Media Files');
+      } else {
+        detectedSDKs.push('Other');
+      }
+    }
+    
+    return detectedSDKs;
+  }
+
+  // Check if a package belongs to a known company we already categorize
+  isKnownCompany(filePath) {
+    const knownCompanies = [
+      'google', 'facebook', 'amazon', 'microsoft', 'twitter', 'linkedin', 
+      'paypal', 'stripe', 'square', 'mapbox', 'dropbox', 'crashlytics',
+      'bugsnag', 'flurry', 'mixpanel', 'amplitude', 'onesignal', 'pusher',
+      'squareup', 'bumptech', 'jakewharton', 'nostra13', 'greenrobot'
+    ];
+    
+    return knownCompanies.some(company => filePath.includes(`com/${company}/`));
+  }
+
+  // Format company names for better readability
+  formatCompanyName(companyName) {
+    const companyMap = {
+      'android': 'Android',
+      'samsung': 'Samsung',
+      'huawei': 'Huawei',
+      'xiaomi': 'Xiaomi',
+      'oppo': 'OPPO',
+      'vivo': 'Vivo',
+      'unity3d': 'Unity',
+      'adobe': 'Adobe',
+      'airbnb': 'Airbnb',
+      'uber': 'Uber',
+      'spotify': 'Spotify',
+      'netflix': 'Netflix',
+      'whatsapp': 'WhatsApp',
+      'telegram': 'Telegram',
+      'discord': 'Discord',
+      'slack': 'Slack',
+      'zoom': 'Zoom',
+      'skype': 'Skype'
+    };
+    
+    return companyMap[companyName.toLowerCase()] || companyName.charAt(0).toUpperCase() + companyName.slice(1);
   }
 
   renderResults() {
@@ -530,6 +1129,7 @@ class APKAnalyzer {
     // Render tables
     this.renderTable('folderTable', this.oldFileData.sizes.folder, this.newFileData.sizes.folder);
     this.renderTable('extTable', this.oldFileData.sizes.ext, this.newFileData.sizes.ext);
+    this.renderTable('sdkTable', this.oldFileData.sizes.sdk, this.newFileData.sizes.sdk);
     
     // Render overview charts by default
     setTimeout(() => this.renderOverviewCharts(), 100);
@@ -552,15 +1152,75 @@ class APKAnalyzer {
     const tbody = document.querySelector(`#${tableId} tbody`);
     tbody.innerHTML = '';
     
-    const keys = [...new Set([...Object.keys(dataOld), ...Object.keys(dataNew)])].sort();
+    const keys = [...new Set([...Object.keys(dataOld), ...Object.keys(dataNew)])];
     const isFolder = tableId === 'folderTable';
     
-    keys.forEach(key => {
+    // Create array of objects with key and change data for sorting
+    const keyData = keys.map(key => {
       const oldVal = dataOld[key] || 0;
       const newVal = dataNew[key] || 0;
       const delta = newVal - oldVal;
       const percentChange = oldVal > 0 ? ((delta / oldVal) * 100) : (newVal > 0 ? 100 : 0);
       
+      return {
+        key,
+        oldVal,
+        newVal,
+        delta,
+        percentChange,
+        absChange: Math.abs(delta)
+      };
+    });
+    
+    // Enhanced sorting: prioritize meaningful changes over tiny ones
+    keyData.sort((a, b) => {
+      // Calculate significance score (combines absolute size with relative change)
+      const getSignificanceScore = (item) => {
+        const { absChange, oldVal, newVal, percentChange } = item;
+        
+        // Base score from absolute change
+        let score = absChange;
+        
+        // Boost score for larger absolute sizes (even if change is small)
+        const maxSize = Math.max(oldVal, newVal);
+        if (maxSize > 10 * 1024 * 1024) { // > 10MB
+          score += maxSize * 0.1;
+        } else if (maxSize > 1024 * 1024) { // > 1MB
+          score += maxSize * 0.05;
+        }
+        
+        // Boost score for significant percentage changes
+        if (Math.abs(percentChange) > 50 && absChange > 1024) { // > 50% and > 1KB
+          score *= 1.5;
+        } else if (Math.abs(percentChange) > 100 && absChange > 512) { // > 100% and > 512B
+          score *= 1.3;
+        }
+        
+        // Heavily penalize very small changes (< 100 bytes) unless they're new/removed entirely
+        if (absChange < 100 && oldVal > 0 && newVal > 0) {
+          score *= 0.1;
+        }
+        
+        return score;
+      };
+      
+      const scoreA = getSignificanceScore(a);
+      const scoreB = getSignificanceScore(b);
+      
+      if (scoreA !== scoreB) {
+        return scoreB - scoreA; // Higher significance first
+      }
+      
+      // Fallback: larger absolute change first
+      if (a.absChange !== b.absChange) {
+        return b.absChange - a.absChange;
+      }
+      
+      // Final fallback: larger overall size first
+      return Math.max(b.oldVal, b.newVal) - Math.max(a.oldVal, a.newVal);
+    });
+    
+    keyData.forEach(({ key, oldVal, newVal, delta, percentChange }) => {
       const row = document.createElement('tr');
       
       if (delta > 0) {
@@ -572,6 +1232,15 @@ class APKAnalyzer {
       let actionCell = '';
       if (isFolder) {
         actionCell = `<td><button class="explore-btn" onclick="analyzer.drillDownToFolder('${key}')">🔍 Explore</button></td>`;
+      } else if (tableId === 'sdkTable') {
+        // For SDK table, show impact indicator
+        let impact = 'Low';
+        if (Math.abs(delta) > 1024 * 1024) { // > 1MB
+          impact = 'High';
+        } else if (Math.abs(delta) > 100 * 1024) { // > 100KB
+          impact = 'Medium';
+        }
+        actionCell = `<td><span class="impact-${impact.toLowerCase()}">${impact}</span></td>`;
       } else {
         // For extensions, count files (with null safety)
         let fileCount = 0;
@@ -923,6 +1592,72 @@ class APKAnalyzer {
     });
   }
 
+  renderSDKsChart() {
+    if (typeof Chart === 'undefined') {
+      console.error('Chart.js not available for SDKs chart');
+      return;
+    }
+    
+    const ctx = document.getElementById('sdksChart').getContext('2d');
+    
+    if (this.charts.sdks) {
+      this.charts.sdks.destroy();
+    }
+
+    const sdkData = this.getTopChanges(this.oldFileData.sizes.sdk, this.newFileData.sizes.sdk, 15);
+
+    this.charts.sdks = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: sdkData.map(item => item.name),
+        datasets: [
+          {
+            label: 'Size Change',
+            data: sdkData.map(item => item.change),
+            backgroundColor: sdkData.map(item => 
+              item.change >= 0 ? 'rgba(255, 99, 132, 0.6)' : 'rgba(75, 192, 192, 0.6)'
+            ),
+            borderColor: sdkData.map(item => 
+              item.change >= 0 ? 'rgba(255, 99, 132, 1)' : 'rgba(75, 192, 192, 1)'
+            ),
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        indexAxis: 'y',
+        plugins: {
+          tooltip: {
+            callbacks: {
+              label: (context) => {
+                const change = context.raw;
+                const item = sdkData[context.dataIndex];
+                return [
+                  `Change: ${change >= 0 ? '+' : ''}${this.humanReadableSize(change)}`,
+                  `Old: ${this.humanReadableSize(item.oldSize)}`,
+                  `New: ${this.humanReadableSize(item.newSize)}`
+                ];
+              }
+            }
+          },
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          x: {
+            beginAtZero: true,
+            ticks: {
+              callback: (value) => this.humanReadableSize(value)
+            }
+          }
+        }
+      }
+    });
+  }
+
   renderInsights() {
     const container = document.getElementById('insightsContainer');
     const insights = this.generateInsights();
@@ -1015,7 +1750,40 @@ class APKAnalyzer {
     }));
 
     return changes
-      .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+      .sort((a, b) => {
+        // Enhanced sorting for top changes
+        const getTopChangeSignificance = (item) => {
+          const { change, oldSize, newSize } = item;
+          const absChange = Math.abs(change);
+          let score = absChange;
+          
+          // Boost for larger files
+          const maxSize = Math.max(oldSize, newSize);
+          if (maxSize > 5 * 1024 * 1024) { // > 5MB
+            score += maxSize * 0.1;
+          } else if (maxSize > 1024 * 1024) { // > 1MB
+            score += maxSize * 0.05;
+          }
+          
+          // Boost for significant percentage changes
+          const percentChange = oldSize > 0 ? Math.abs(change / oldSize * 100) : 100;
+          if (percentChange > 50 && absChange > 1024) {
+            score *= 1.4;
+          }
+          
+          // Penalize very small changes
+          if (absChange < 500 && oldSize > 0 && newSize > 0) {
+            score *= 0.2;
+          }
+          
+          return score;
+        };
+        
+        const sigA = getTopChangeSignificance(a);
+        const sigB = getTopChangeSignificance(b);
+        
+        return sigB - sigA;
+      })
       .slice(0, limit);
   }
 
@@ -1137,7 +1905,7 @@ class APKAnalyzer {
       });
     }
 
-    // Apply sorting
+    // Apply enhanced sorting
     const sortBy = document.getElementById('sortBy').value;
     files.sort((a, b) => {
       const oldA = this.detailedOldData.files.find(f => f.path === a.path);
@@ -1146,10 +1914,43 @@ class APKAnalyzer {
       const changeB = b.size - (oldB ? oldB.size : 0);
       
       switch (sortBy) {
-        case 'change': return Math.abs(changeB) - Math.abs(changeA);
-        case 'name': return a.name.localeCompare(b.name);
-        case 'size': return b.size - a.size;
-        default: return 0;
+        case 'change':
+          // Enhanced sorting for changes - prioritize meaningful changes
+          const getFileSignificance = (change, oldSize, newSize) => {
+            const absChange = Math.abs(change);
+            let score = absChange;
+            
+            // Boost for larger files
+            const maxSize = Math.max(oldSize || 0, newSize || 0);
+            if (maxSize > 1024 * 1024) { // > 1MB
+              score += maxSize * 0.05;
+            }
+            
+            // Boost for significant percentage changes
+            const percentChange = oldSize > 0 ? Math.abs(change / oldSize * 100) : 100;
+            if (percentChange > 50 && absChange > 1024) {
+              score *= 1.3;
+            }
+            
+            // Penalize tiny changes
+            if (absChange < 100 && oldSize > 0 && newSize > 0) {
+              score *= 0.1;
+            }
+            
+            return score;
+          };
+          
+          const sigA = getFileSignificance(changeA, oldA?.size, a.size);
+          const sigB = getFileSignificance(changeB, oldB?.size, b.size);
+          
+          return sigB - sigA;
+          
+        case 'name': 
+          return a.name.localeCompare(b.name);
+        case 'size': 
+          return b.size - a.size;
+        default: 
+          return 0;
       }
     });
 
