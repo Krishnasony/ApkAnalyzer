@@ -534,7 +534,6 @@ class APKAnalyzer {
     this.setupDragAndDrop();
     this.setupTabs();
     this.setupDetailedAnalysis();
-    this.setupDebugControls();
     
     // Test file input accessibility after setup
     setTimeout(() => {
@@ -708,59 +707,6 @@ class APKAnalyzer {
     });
   }
 
-  setupDebugControls() {
-    const testOldBtn = document.getElementById('testOldInput');
-    const testNewBtn = document.getElementById('testNewInput');
-    const debugLog = document.getElementById('debugLog');
-    
-    const log = (message) => {
-      console.log(message);
-      if (debugLog) {
-        debugLog.innerHTML += `<div>${new Date().toLocaleTimeString()}: ${message}</div>`;
-        debugLog.scrollTop = debugLog.scrollHeight;
-      }
-    };
-    
-    if (testOldBtn) {
-      testOldBtn.addEventListener('click', () => {
-        log('Testing old file input...');
-        const fileInput = document.getElementById('fileOld');
-        if (fileInput) {
-          try {
-            log(`Input state: hidden=${fileInput.hidden}, disabled=${fileInput.disabled}`);
-            fileInput.click();
-            log('Old file input click executed');
-          } catch (error) {
-            log(`Error: ${error.message}`);
-          }
-        } else {
-          log('Old file input not found!');
-        }
-      });
-    }
-    
-    if (testNewBtn) {
-      testNewBtn.addEventListener('click', () => {
-        log('Testing new file input...');
-        const fileInput = document.getElementById('fileNew');
-        if (fileInput) {
-          try {
-            log(`Input state: hidden=${fileInput.hidden}, disabled=${fileInput.disabled}`);
-            fileInput.click();
-            log('New file input click executed');
-          } catch (error) {
-            log(`Error: ${error.message}`);
-          }
-        } else {
-          log('New file input not found!');
-        }
-      });
-    }
-    
-    // Initial log
-    log('Debug controls initialized');
-  }
-  
   switchTab(tabName) {
     // Remove active class from all tabs and panels
     document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
