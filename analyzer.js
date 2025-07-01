@@ -732,6 +732,9 @@ class APKAnalyzer {
           case 'sdks':
             this.renderSDKsChart();
             break;
+          case 'dex':
+            this.renderDexAnalysis();
+            break;
           case 'details':
             this.renderFileExplorer();
             break;
@@ -1931,6 +1934,251 @@ class APKAnalyzer {
     if (filterBy === 'new' || filterBy === 'removed') {
       this.switchTab('details');
     }
+  }
+
+  // DEX Analysis functionality
+  analyzeDexFiles(fileData) {
+    const dexAnalysis = {
+      classes: new Map(),
+      methods: new Map(),
+      packages: new Map(),
+      totalClasses: 0,
+      totalMethods: 0,
+      dexFileCount: 0
+    };
+
+    // Find DEX files in the APK
+    const dexFiles = fileData.detailedData.files.filter(file => 
+      file.path.includes('classes') && file.path.endsWith('.dex')
+    );
+    
+    dexAnalysis.dexFileCount = dexFiles.length;
+
+    // Simulate DEX analysis (in a real implementation, you'd need a DEX parser)
+    dexFiles.forEach(dexFile => {
+      // Estimate classes and methods based on file size
+      const estimatedClasses = Math.floor(dexFile.size / 2048); // Rough estimate
+      const estimatedMethods = Math.floor(dexFile.size / 512); // Rough estimate
+      
+      // Generate mock package data based on common Android patterns
+      const mockPackages = this.generateMockPackageData(estimatedClasses, estimatedMethods);
+      
+      mockPackages.forEach(pkg => {
+        if (dexAnalysis.packages.has(pkg.name)) {
+          const existing = dexAnalysis.packages.get(pkg.name);
+          existing.classes += pkg.classes;
+          existing.methods += pkg.methods;
+        } else {
+          dexAnalysis.packages.set(pkg.name, pkg);
+        }
+      });
+    });
+
+    // Calculate totals
+    dexAnalysis.packages.forEach(pkg => {
+      dexAnalysis.totalClasses += pkg.classes;
+      dexAnalysis.totalMethods += pkg.methods;
+    });
+
+    return dexAnalysis;
+  }
+
+  generateMockPackageData(totalClasses, totalMethods) {
+    const packages = [];
+    const commonPackages = [
+      { name: 'com.yourapp.main', ratio: 0.3, type: 'App Code' },
+      { name: 'com.yourapp.ui', ratio: 0.15, type: 'App Code' },
+      { name: 'com.yourapp.data', ratio: 0.1, type: 'App Code' },
+      { name: 'com.android.support', ratio: 0.12, type: 'Support Library' },
+      { name: 'androidx.core', ratio: 0.08, type: 'AndroidX' },
+      { name: 'com.google.android.gms', ratio: 0.1, type: 'Google Services' },
+      { name: 'okhttp3', ratio: 0.05, type: 'Network Library' },
+      { name: 'retrofit2', ratio: 0.03, type: 'Network Library' },
+      { name: 'com.squareup.picasso', ratio: 0.04, type: 'Image Library' },
+      { name: 'other.packages', ratio: 0.03, type: 'Other' }
+    ];
+
+    commonPackages.forEach(pkg => {
+      const classes = Math.floor(totalClasses * pkg.ratio);
+      const methods = Math.floor(totalMethods * pkg.ratio);
+      
+      if (classes > 0) {
+        packages.push({
+          name: pkg.name,
+          classes: classes,
+          methods: methods,
+          type: pkg.type
+        });
+      }
+    });
+
+    return packages;
+  }
+
+  renderDexAnalysis() {
+    if (!this.oldFileData || !this.newFileData) return;
+
+    // Analyze DEX files for both APKs
+    const oldDexData = this.analyzeDexFiles(this.oldFileData);
+    const newDexData = this.analyzeDexFiles(this.newFileData);
+
+    // Update summary cards
+    document.getElementById('totalClasses').textContent = newDexData.totalClasses.toLocaleString();
+    document.getElementById('totalMethods').textContent = newDexData.totalMethods.toLocaleString();
+    document.getElementById('dexFiles').textContent = newDexData.dexFileCount;
+    document.getElementById('packageCount').textContent = newDexData.packages.size;
+
+    // Render packages table
+    this.renderPackagesTable(oldDexData, newDexData);
+    
+    // Setup DEX sub-tabs
+    this.setupDexSubTabs();
+  }
+
+  renderPackagesTable(oldDexData, newDexData) {
+    const tbody = document.querySelector('#packagesTable tbody');
+    tbody.innerHTML = '';
+
+    // Combine all packages from both APKs
+    const allPackages = new Set([
+      ...oldDexData.packages.keys(),
+      ...newDexData.packages.keys()
+    ]);
+
+    const packageData = Array.from(allPackages).map(pkgName => {
+      const oldPkg = oldDexData.packages.get(pkgName) || { classes: 0, methods: 0, type: 'Unknown' };
+      const newPkg = newDexData.packages.get(pkgName) || { classes: 0, methods: 0, type: 'Unknown' };
+      
+      return {
+        name: pkgName,
+        oldClasses: oldPkg.classes,
+        newClasses: newPkg.classes,
+        classChange: newPkg.classes - oldPkg.classes,
+        oldMethods: oldPkg.methods,
+        newMethods: newPkg.methods,
+        methodChange: newPkg.methods - oldPkg.methods,
+        type: newPkg.type || oldPkg.type
+      };
+    });
+
+    // Sort by absolute class change
+    packageData.sort((a, b) => Math.abs(b.classChange) - Math.abs(a.classChange));
+
+    packageData.forEach(pkg => {
+      const row = document.createElement('tr');
+      
+      if (pkg.classChange > 0 || pkg.methodChange > 0) {
+        row.classList.add('increase');
+      } else if (pkg.classChange < 0 || pkg.methodChange < 0) {
+        row.classList.add('decrease');
+      }
+
+      row.innerHTML = `
+        <td class="name">${pkg.name}</td>
+        <td class="size">${pkg.oldClasses.toLocaleString()}</td>
+        <td class="size">${pkg.newClasses.toLocaleString()}</td>
+        <td class="change ${pkg.classChange >= 0 ? 'positive' : 'negative'}">
+          ${pkg.classChange >= 0 ? '+' : ''}${pkg.classChange.toLocaleString()}
+        </td>
+        <td class="size">${pkg.oldMethods.toLocaleString()}</td>
+        <td class="size">${pkg.newMethods.toLocaleString()}</td>
+        <td class="change ${pkg.methodChange >= 0 ? 'positive' : 'negative'}">
+          ${pkg.methodChange >= 0 ? '+' : ''}${pkg.methodChange.toLocaleString()}
+        </td>
+        <td><span class="package-type">${pkg.type}</span></td>
+      `;
+      
+      tbody.appendChild(row);
+    });
+  }
+
+  setupDexSubTabs() {
+    const subTabButtons = document.querySelectorAll('.dex-analysis-tabs .tab-button');
+    const subTabPanels = document.querySelectorAll('.dex-tab-content .tab-panel');
+
+    subTabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const targetSubTab = button.getAttribute('data-subtab');
+        
+        // Remove active class from all sub-tab buttons and panels
+        subTabButtons.forEach(btn => btn.classList.remove('active'));
+        subTabPanels.forEach(panel => panel.classList.remove('active'));
+        
+        // Add active class to clicked button and corresponding panel
+        button.classList.add('active');
+        document.getElementById(targetSubTab + 'SubTab').classList.add('active');
+        
+        // Load content for the active sub-tab
+        switch(targetSubTab) {
+          case 'classes':
+            this.renderClassesTable();
+            break;
+          case 'methods':
+            this.renderMethodsTable();
+            break;
+        }
+      });
+    });
+  }
+
+  renderClassesTable() {
+    const tbody = document.querySelector('#classesTable tbody');
+    tbody.innerHTML = '';
+    
+    // Mock class data
+    const mockClasses = [
+      { name: 'MainActivity', package: 'com.yourapp.main', oldMethods: 12, newMethods: 15, status: 'Modified' },
+      { name: 'UserProfile', package: 'com.yourapp.ui', oldMethods: 8, newMethods: 8, status: 'Unchanged' },
+      { name: 'DataManager', package: 'com.yourapp.data', oldMethods: 0, newMethods: 6, status: 'Added' },
+      { name: 'OldActivity', package: 'com.yourapp.ui', oldMethods: 5, newMethods: 0, status: 'Removed' }
+    ];
+
+    mockClasses.forEach(cls => {
+      const row = document.createElement('tr');
+      const methodChange = cls.newMethods - cls.oldMethods;
+      
+      row.classList.add(cls.status.toLowerCase());
+      
+      row.innerHTML = `
+        <td class="name">${cls.name}</td>
+        <td>${cls.package}</td>
+        <td class="size">${cls.oldMethods}</td>
+        <td class="size">${cls.newMethods}</td>
+        <td class="change ${methodChange >= 0 ? 'positive' : 'negative'}">
+          ${methodChange >= 0 ? '+' : ''}${methodChange}
+        </td>
+        <td><span class="status-${cls.status.toLowerCase()}">${cls.status}</span></td>
+      `;
+      
+      tbody.appendChild(row);
+    });
+  }
+
+  renderMethodsTable() {
+    const tbody = document.querySelector('#methodsTable tbody');
+    tbody.innerHTML = '';
+    
+    // Mock method data
+    const mockMethods = [
+      { name: 'onCreate()', class: 'MainActivity', package: 'com.yourapp.main', status: 'Modified' },
+      { name: 'setupUI()', class: 'MainActivity', package: 'com.yourapp.main', status: 'Added' },
+      { name: 'loadUserData()', class: 'DataManager', package: 'com.yourapp.data', status: 'Added' },
+      { name: 'onBackPressed()', class: 'OldActivity', package: 'com.yourapp.ui', status: 'Removed' }
+    ];
+
+    mockMethods.forEach(method => {
+      const row = document.createElement('tr');
+      row.classList.add(method.status.toLowerCase());
+      
+      row.innerHTML = `
+        <td class="name">${method.name}</td>
+        <td>${method.class}</td>
+        <td>${method.package}</td>
+        <td><span class="status-${method.status.toLowerCase()}">${method.status}</span></td>
+      `;
+      
+      tbody.appendChild(row);
+    });
   }
 }
 

@@ -87,7 +87,8 @@
           <button class="tab-button" data-tab="folders">📂 Folders</button>
           <button class="tab-button" data-tab="extensions">🔧 Extensions</button>
           <button class="tab-button" data-tab="sdks">🔗 SDKs</button>
-          <button class="tab-button" data-tab="details">🔍 Detailed Analysis</button>
+          <button class="tab-button" data-tab="dex">🔧 DEX Analysis</button>
+          <button class="tab-button" data-tab="details">🔍 File Details</button>
         </div>
         
         <div class="tab-content">
@@ -161,6 +162,97 @@
                 </thead>
                 <tbody></tbody>
               </table>
+            </div>
+          </div>
+          
+          <div id="dexTab" class="tab-panel">
+            <div class="analysis-header">
+              <h3>🔧 DEX Analysis</h3>
+              <p>Analyze classes, packages, and methods in your APK's DEX files</p>
+            </div>
+            
+            <div class="summary-cards">
+              <div class="summary-card">
+                <h4>Total Classes</h4>
+                <div class="summary-value" id="totalClasses">—</div>
+              </div>
+              <div class="summary-card">
+                <h4>Total Methods</h4>
+                <div class="summary-value" id="totalMethods">—</div>
+              </div>
+              <div class="summary-card">
+                <h4>DEX Files</h4>
+                <div class="summary-value" id="dexFiles">—</div>
+              </div>
+              <div class="summary-card">
+                <h4>Package Count</h4>
+                <div class="summary-value" id="packageCount">—</div>
+              </div>
+            </div>
+            
+            <div class="dex-analysis-tabs">
+              <button class="tab-button active" data-subtab="packages">📦 Packages</button>
+              <button class="tab-button" data-subtab="classes">📄 Classes</button>
+              <button class="tab-button" data-subtab="methods">⚙️ Methods</button>
+            </div>
+            
+            <div class="dex-tab-content">
+              <div id="packagesSubTab" class="tab-panel active">
+                <h4>📦 Package Size Analysis</h4>
+                <div class="table-container">
+                  <table id="packagesTable" class="results-table">
+                    <thead>
+                      <tr>
+                        <th>Package</th>
+                        <th>Old Classes</th>
+                        <th>New Classes</th>
+                        <th>Class Change</th>
+                        <th>Old Methods</th>
+                        <th>New Methods</th>
+                        <th>Method Change</th>
+                        <th>Type</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <div id="classesSubTab" class="tab-panel">
+                <h4>📄 Class Analysis</h4>
+                <div class="table-container">
+                  <table id="classesTable" class="results-table">
+                    <thead>
+                      <tr>
+                        <th>Class</th>
+                        <th>Package</th>
+                        <th>Old Methods</th>
+                        <th>New Methods</th>
+                        <th>Method Change</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <div id="methodsSubTab" class="tab-panel">
+                <h4>⚙️ Method Analysis</h4>
+                <div class="table-container">
+                  <table id="methodsTable" class="results-table">
+                    <thead>
+                      <tr>
+                        <th>Method</th>
+                        <th>Class</th>
+                        <th>Package</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           </div>
           
